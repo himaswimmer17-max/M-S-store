@@ -882,7 +882,8 @@
                 return;
             }
 
-            if((inputVal === 'M&S Store' || inputVal === 'فاطمة ستور' || inputVal === 'fatma store') && passVal === '2026') {
+            // التحقق من بيانات الأدمن الجديدة
+            if(inputVal === 'fatmastore' && passVal === 'FATMAM&S store') {
                 isAdmin = true;
                 localStorage.setItem('m_s_admin', 'true');
                 closeModal('authModal');
