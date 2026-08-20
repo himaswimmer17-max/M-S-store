@@ -500,7 +500,8 @@
 
                 <div class="form-group">
                     <label data-ar="رقم الهاتف (الموبايل):" data-en="Phone Number:">رقم الهاتف (الموبايل):</label>
-                    <input type="tel" id="regPhone" class="form-control" placeholder="01xxxxxxxxx">
+                    <input type="tel" id="regPhone" class="form-control" placeholder="01xxxxxxxxx" oninput="validatePhoneLive()">
+                    <span id="phoneStatus" class="status-msg"></span>
                 </div>
 
                 <div class="form-group">
@@ -837,13 +838,33 @@
         }
 
         function validateGmailLive() {
-            const gmailInput = document.getElementById('regGmail').value;
+            const gmailInput = document.getElementById('regGmail').value.trim();
             const statusEl = document.getElementById('gmailStatus');
-            if(gmailInput.endsWith('@gmail.com') && gmailInput.length > 10) {
+            if (gmailInput === "") {
+                statusEl.innerText = "";
+                return;
+            }
+            if (gmailInput.endsWith('@gmail.com')) {
                 statusEl.innerText = '✅ بريد Gmail صحيح';
                 statusEl.className = 'status-msg status-valid';
             } else {
-                statusEl.innerText = '❌ يجب أن ينتهي بـ @gmail.com';
+                statusEl.innerText = '❌ هذا البريد تالف';
+                statusEl.className = 'status-msg status-invalid';
+            }
+        }
+
+        function validatePhoneLive() {
+            const phoneInput = document.getElementById('regPhone').value.trim();
+            const statusEl = document.getElementById('phoneStatus');
+            if (phoneInput === "") {
+                statusEl.innerText = "";
+                return;
+            }
+            if (phoneInput.startsWith('01') && phoneInput.length === 11 && /^\d+$/.test(phoneInput)) {
+                statusEl.innerText = '✅ هذا الرقم صحيح';
+                statusEl.className = 'status-msg status-valid';
+            } else {
+                statusEl.innerText = '❌ يجب أن يبدأ الرقم بـ 01 ويتكون من 11 رقماً';
                 statusEl.className = 'status-msg status-invalid';
             }
         }
@@ -861,8 +882,25 @@
             }
 
             if(!gmail.endsWith('@gmail.com')) {
-                alert('خطأ: البريد الإلكتروني يجب أن يكون Gmail صحيحاً.');
+                alert('خطأ: هذا البريد تالف.');
                 return;
+            }
+
+            if(!phone.startsWith('01') || phone.length !== 11 || !/^\d+$/.test(phone)) {
+                alert('خطأ: رقم الموبايل غير صحيح (يجب أن يبدأ بـ 01 ويتكون من 11 رقماً).');
+                return;
+            }
+
+            // التحقق من عدم تكرار البريد الإلكتروني في التخزين أو قاعدة البيانات محلياً
+            const savedUserStr = localStorage.getItem('m_s_user');
+            if(savedUserStr) {
+                try {
+                    const savedUser = JSON.parse(savedUserStr);
+                    if(savedUser.gmail === gmail) {
+                        alert('خطأ: هذا البريد الإلكتروني مسجل مسبقاً، لا يمكن إنشاء أكثر من حساب بنفس البريد.');
+                        return;
+                    }
+                } catch(e) {}
             }
 
             const userData = { username: user, gmail: gmail, phone: phone, password: pass, address: address };
@@ -882,7 +920,6 @@
                 return;
             }
 
-            // التحقق من بيانات الأدمن الجديدة
             if(inputVal === 'fatmastore' && passVal === 'FATMAM&S store') {
                 isAdmin = true;
                 localStorage.setItem('m_s_admin', 'true');
@@ -1270,7 +1307,7 @@
                 customerName: document.getElementById('editCustName').value,
                 customerGmail: document.getElementById('editCustGmail').value,
                 customerPhone: document.getElementById('editCustPhone').value,
-                customerAddress: document.getElementById('editCustAddress').value,
+                customerAddress: document.getElementById('editCustAddress'].value,
                 paymentMethod: document.getElementById('editPaymentMethod').value,
                 status: document.getElementById('editCustStatus').value,
                 date: allOrdersData[key].date
